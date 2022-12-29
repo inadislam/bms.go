@@ -16,5 +16,19 @@ func NewRoutes(app *fiber.App) {
 			CacheHeader:  "X-Cache-Status",
 		},
 	))
+
 	app.Get("/home", controllers.NotImplemented)
+	app.Get("/posts", controllers.NotImplemented)
+	app.Get("/categories", controllers.NotImplemented)
+	app.Get("/category/:catname", controllers.NotImplemented)
+	app.Get("/author/:authorname", controllers.NotImplemented)
+
+	app.Post("/register", controllers.NotImplemented)
+	app.Post("/login", controllers.NotImplemented)
+	app.Post("/search/:q", controllers.NotImplemented)
+	app.Post("/comments/:postid", controllers.NotImplemented)
+	app.Post("/addpost", controllers.NotImplemented)
+	app.Post("/addcategory", controllers.NotImplemented)
+	app.Post("/adduser", controllers.NotImplemented)
+	app.Post("addcomment", controllers.NotImplemented)
 }
