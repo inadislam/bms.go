@@ -16,5 +16,5 @@ func NewRoutes(app *fiber.App) {
 			CacheHeader:  "X-Cache-Status",
 		},
 	))
-	app.Get("/", controllers.NotImplemented)
+	app.Get("/home", controllers.NotImplemented)
 }
