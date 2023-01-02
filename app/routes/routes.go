@@ -23,8 +23,9 @@ func NewRoutes(app *fiber.App) {
 	app.Get("/category/:catname", controllers.NotImplemented)
 	app.Get("/author/:authorname", controllers.NotImplemented)
 
-	app.Post("/register", controllers.NotImplemented)
+	app.Post("/register", controllers.Registration)
 	app.Post("/login", controllers.NotImplemented)
+	app.Post("/active-user", controllers.NotImplemented)
 	app.Post("/search/:q", controllers.NotImplemented)
 	app.Post("/comments/:postid", controllers.NotImplemented)
 	app.Post("/addpost", controllers.NotImplemented)
