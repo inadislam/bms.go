@@ -15,6 +15,7 @@ func main() {
 	err := godotenv.Load()
 	utils.CheckError(err)
 	db.InitDB()
+	db.AutoMigrator()
 	app := fiber.New()
 	routes.NewRoutes(app)
 	log.Fatal(app.Listen(":" + os.Getenv("APP_PORT")))

@@ -18,7 +18,16 @@ type Users struct {
 	CreatedAt    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
+
 type Login struct {
 	Email    string `gorm:"uniqueIndex;not null" json:"email"`
 	Password string `gorm:"not null" json:"password"`
+}
+
+type RegisterInput struct {
+	Name            string `gorm:"type:varchar(255);not null" json:"name"`
+	Email           string `gorm:"uniqueIndex;not null" json:"email"`
+	Password        string `gorm:"not null" json:"password"`
+	PasswordConfirm string `gorm:"not null" json:"password_confirm"`
+	ProfilePhoto    string `gorm:"type:varchar(255);not null" json:"profile_photo"`
 }
