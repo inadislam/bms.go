@@ -17,7 +17,7 @@ func NewRoutes(app *fiber.App) {
 		},
 	))
 
-	app.Get("/home", controllers.NotImplemented)
+	app.Get("/home", controllers.Users)
 	app.Get("/posts", controllers.NotImplemented)
 	app.Get("/categories", controllers.NotImplemented)
 	app.Get("/category/:catname", controllers.NotImplemented)
