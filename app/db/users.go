@@ -28,10 +28,31 @@ func UserById(userid uuid.UUID) (models.Users, error) {
 	return user, nil
 }
 
+func UserByEmail(email string) (models.Users, error) {
+	var user models.Users
+	err := DB.Debug().Model(&models.Users{}).Where("email = ?", email).Select("id, name, email, password, role, profile_photo, verified").Error
+	if err != nil {
+		return models.Users{}, err
+	}
+	return user, nil
+}
+
 func UserActive(uid uuid.UUID) error {
 	err := DB.Debug().Model(&models.Users{}).Where("ID = ?", uid).Update("verified", true).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func GetOTP(uid uuid.UUID) int64 {
+	code, err := utils.GenerateOTP()
+	if err != nil {
+		return 0
+	}
+	err = DB.Debug().Model(&models.Users{}).Where("ID = ?", uid).Update("verification", code).Error
+	if err != nil {
+		return 0
+	}
+	return code
 }
