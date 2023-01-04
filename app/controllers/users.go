@@ -54,37 +54,48 @@ func Registration(c *fiber.Ctx) error {
 
 func ActiveUser(c *fiber.Ctx) error {
 	type Body struct {
-		UserId uuid.UUID `json:"user_id"`
-		Otp    int64     `json:"otp"`
+		Otp int64 `json:"otp"`
 	}
 	b := new(Body)
 	if err := c.BodyParser(b); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
 			"errors": err.Error(),
+			"status": fiber.StatusUnprocessableEntity,
 		})
 	}
-	user, err := db.UserById(b.UserId)
+	if c.Params("userid") == " " {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+			"errors": "userid not found",
+			"status": fiber.StatusUnprocessableEntity,
+		})
+	}
+	userid, _ := uuid.Parse(c.Params("userid"))
+	user, err := db.UserById(userid)
 	if err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"errors": err.Error(),
+			"errors": err,
+			"status": fiber.StatusUnprocessableEntity,
 		})
 	}
 	if b.Otp != user.Verification {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"errors": "internal server error",
+			"status": fiber.StatusInternalServerError,
 		})
 	} else {
-		if user.Verified == true {
+		if user.Verified {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"errors": "otp expired",
+				"status": fiber.StatusInternalServerError,
 			})
 		}
-		// err = db.UserActive(user.ID)
-		// if err != nil {
-		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		// 		"errors": "failed to active account, internal server error",
-		// 	})
-		// }
+		err = db.UserActive(user.ID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"errors": "failed to active account, internal server error",
+				"status": fiber.StatusInternalServerError,
+			})
+		}
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"user_id":       user.ID,

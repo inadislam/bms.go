@@ -11,7 +11,7 @@ func ActiveUser(code, email, username string) {
 	mail.SetHeader("To", email)
 	mail.SetHeader("Subject", "Activate your account")
 	mail.SetBody("text/html", messBody)
-	dialer := gomail.NewDialer("0.0.0.0", 8025, "", "")
+	dialer := gomail.NewDialer("0.0.0.0", 1025, "", "")
 	if err := dialer.DialAndSend(mail); err != nil {
 		panic(err)
 	}
