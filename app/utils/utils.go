@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"log"
 	"crypto/rand"
+	"log"
 	"math/big"
 
 	"golang.org/x/crypto/bcrypt"
@@ -20,7 +20,7 @@ func HashPassword(password string) (string, error) {
 	return string(hpass), err
 }
 
-func ComparePass(pass, hashedPass string) error {
+func ComparePass(hashedPass, pass string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPass), []byte(pass))
 	CheckError(err)
 	return err

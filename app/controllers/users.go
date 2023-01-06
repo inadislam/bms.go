@@ -104,7 +104,6 @@ func ActiveUser(c *fiber.Ctx) error {
 		"user_id":       user.ID,
 		"name":          user.Name,
 		"email":         user.Email,
-		"role":          user.Role,
 		"profile_photo": user.ProfilePhoto,
 		"password":      "Your Password",
 		"message":       "your account activated.please login now!!",
@@ -139,10 +138,16 @@ func Login(c *fiber.Ctx) error {
 			"status": fiber.StatusUnauthorized,
 		})
 	}
-	if err := utils.ComparePass(user.Password, u.Password); err != nil {
+	if err := utils.ComparePass(u.Password, user.Password); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"errors": "password not matched",
 			"status": fiber.StatusBadRequest,
+		})
+	}
+	if !u.Verified {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"errors": "verify your account first!!",
+			"status": fiber.StatusUnauthorized,
 		})
 	}
 	token, err := auth.GenerateJWT(u.ID.String(), u.Email)
@@ -152,7 +157,6 @@ func Login(c *fiber.Ctx) error {
 			"status": fiber.StatusUnprocessableEntity,
 		})
 	}
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"access_token": token,
 	})
