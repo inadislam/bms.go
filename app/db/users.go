@@ -1,9 +1,12 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/inadislam/bms-go/app/models"
 	"github.com/inadislam/bms-go/app/utils"
+	"gorm.io/gorm"
 )
 
 func RegistrationHelper(user models.Users) (models.Users, error) {
@@ -21,9 +24,12 @@ func RegistrationHelper(user models.Users) (models.Users, error) {
 
 func UserById(userid uuid.UUID) (models.Users, error) {
 	var user models.Users
-	err := DB.Debug().Model(&models.Users{}).Where("ID = ?", userid).Select("id, name, email, password, role, profile_photo, verification, verified").Find(&user).Error
+	err := DB.Debug().Model(&models.Users{}).Where("ID = ?", userid).Select("id, name, email, role, profile_photo, verification, verified").Find(&user).Error
 	if err != nil {
 		return models.Users{}, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return models.Users{}, errors.New("user not found")
 	}
 	return user, nil
 }

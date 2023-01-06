@@ -6,6 +6,7 @@ import (
 	"github.com/badoux/checkmail"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/inadislam/bms-go/app/auth"
 	"github.com/inadislam/bms-go/app/db"
 	"github.com/inadislam/bms-go/app/models"
 	"github.com/inadislam/bms-go/app/utils"
@@ -14,20 +15,21 @@ import (
 func Registration(c *fiber.Ctx) error {
 	user := new(models.Users)
 	if err := c.BodyParser(user); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"errors": err.Error(),
+			"status": fiber.StatusBadRequest,
 		})
 	}
 	if user.Name == "" || user.Email == "" || user.Password == "" {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"errors": "fields cannot be empty",
-			"status": fiber.StatusUnprocessableEntity,
+			"status": fiber.StatusBadRequest,
 		})
 	}
 	if err := checkmail.ValidateFormat(user.Email); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"errors": "invalid email format",
-			"status": fiber.StatusUnprocessableEntity,
+			"status": fiber.StatusUnauthorized,
 		})
 	}
 	uc, err := db.RegistrationHelper(*user)
@@ -41,14 +43,14 @@ func Registration(c *fiber.Ctx) error {
 			"status": fiber.StatusConflict,
 		})
 	}
-	return c.JSON(fiber.Map{
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"ID":           uc.ID,
 		"Name":         uc.Name,
 		"Email":        uc.Email,
 		"Password":     "Your Password",
 		"Verification": uc.Verified,
 		"Message":      "Check your Email Box for Verification Code",
-		"status":       fiber.StatusOK,
+		"status":       fiber.StatusCreated,
 	})
 }
 
@@ -58,29 +60,30 @@ func ActiveUser(c *fiber.Ctx) error {
 	}
 	b := new(Body)
 	if err := c.BodyParser(b); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"errors": err.Error(),
-			"status": fiber.StatusUnprocessableEntity,
+			"status": fiber.StatusBadRequest,
 		})
 	}
-	if c.Params("userid") == " " {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"errors": "userid not found",
-			"status": fiber.StatusUnprocessableEntity,
-		})
-	}
+
 	userid, _ := uuid.Parse(c.Params("userid"))
+	if userid.String() == "00000000-0000-0000-0000-000000000000" {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"errors": "user not found",
+			"status": fiber.StatusNotFound,
+		})
+	}
 	user, err := db.UserById(userid)
 	if err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"errors": err,
-			"status": fiber.StatusUnprocessableEntity,
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"errors": err.Error(),
+			"status": fiber.StatusNotFound,
 		})
 	}
 	if b.Otp != user.Verification {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"errors": "internal server error",
-			"status": fiber.StatusInternalServerError,
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"errors": "otp not matched",
+			"status": fiber.StatusBadRequest,
 		})
 	} else {
 		if user.Verified {
@@ -106,5 +109,51 @@ func ActiveUser(c *fiber.Ctx) error {
 		"password":      "Your Password",
 		"message":       "your account activated.please login now!!",
 		"status":        fiber.StatusOK,
+	})
+}
+
+func Login(c *fiber.Ctx) error {
+	user := new(models.Login)
+	if err := c.BodyParser(user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"errors": err.Error(),
+			"status": fiber.StatusBadRequest,
+		})
+	}
+	u, err := db.UserByEmail(user.Email)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"errors": "user not found",
+			"status": fiber.StatusNotFound,
+		})
+	}
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"errors": "please enter a valid email",
+			"status": fiber.StatusUnauthorized,
+		})
+	}
+	if user.Email != u.Email {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"errors": "email or password not matched",
+			"status": fiber.StatusUnauthorized,
+		})
+	}
+	if err := utils.ComparePass(user.Password, u.Password); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"errors": "password not matched",
+			"status": fiber.StatusBadRequest,
+		})
+	}
+	token, err := auth.GenerateJWT(u.ID.String(), u.Email)
+	if err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+			"errors": "token generating failed",
+			"status": fiber.StatusUnprocessableEntity,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"access_token": token,
 	})
 }
