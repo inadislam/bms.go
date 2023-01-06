@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/badoux/checkmail"
 	"github.com/gofiber/fiber/v2"
@@ -150,14 +151,48 @@ func Login(c *fiber.Ctx) error {
 			"status": fiber.StatusUnauthorized,
 		})
 	}
-	token, err := auth.GenerateJWT(u.ID.String(), u.Email)
+	atoken, rtoken, err := auth.GenerateJWT(u.ID.String(), u.Email)
 	if err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
 			"errors": "token generating failed",
 			"status": fiber.StatusUnprocessableEntity,
 		})
 	}
+	at := fiber.Cookie{
+		Name:     "access_token",
+		Value:    atoken,
+		Expires:  time.Now().Add(15 * time.Minute),
+		HTTPOnly: true,
+	}
+	rt := fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    rtoken,
+		Expires:  time.Now().Add(30 * 24 * time.Hour),
+		HTTPOnly: true,
+	}
+	c.Cookie(&at)
+	c.Cookie(&rt)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token": token,
+		"message": "success",
+		"status":  fiber.StatusOK,
+	})
+}
+
+func Logout(c *fiber.Ctx) error {
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	})
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "success",
+		"status":  fiber.StatusOK,
 	})
 }

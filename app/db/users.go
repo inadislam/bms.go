@@ -24,7 +24,7 @@ func RegistrationHelper(user models.Users) (models.Users, error) {
 
 func UserById(userid uuid.UUID) (models.Users, error) {
 	var user models.Users
-	err := DB.Debug().Model(&models.Users{}).Where("ID = ?", userid).Select("id, name, email, password, role, profile_photo, verification, verified").Find(&user).Error
+	err := DB.Debug().Model(&models.Users{}).Where("ID = ?", userid).Select("id, name, email, password, profile_photo, verification, verified").Find(&user).Error
 	if err != nil {
 		return models.Users{}, err
 	}
@@ -36,7 +36,7 @@ func UserById(userid uuid.UUID) (models.Users, error) {
 
 func UserByEmail(email string) (models.Users, error) {
 	var user models.Users
-	err := DB.Debug().Model(&models.Users{}).Where("email = ?", email).Select("id, name, password, email, role, profile_photo, verification, verified").Find(&user).Error
+	err := DB.Debug().Model(&models.Users{}).Where("email = ?", email).Select("id, name, password, email, profile_photo, verification, verified").Find(&user).Error
 	if err != nil {
 		return models.Users{}, err
 	}
