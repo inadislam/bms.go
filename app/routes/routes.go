@@ -29,6 +29,7 @@ func NewRoutes(app *fiber.App) {
 	app.Post("/register", controllers.Registration)
 	app.Post("/login", controllers.Login)
 	app.Post("/logout", controllers.Logout)
+	app.Post("/refresh-token", controllers.NotImplemented)
 	app.Post("/active-user/:userid", controllers.ActiveUser)
 	app.Post("/search/:q", controllers.NotImplemented)
 	app.Post("/comments/:postid", controllers.NotImplemented)
