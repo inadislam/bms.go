@@ -23,7 +23,7 @@ type RClaim struct {
 
 func GenerateAT(uid, email string) (string, error) {
 	// access token
-	et := time.Now().Add(15 * time.Minute).Unix()
+	et := time.Now().Add(1 * time.Minute).Unix()
 	claims := &AClaim{
 		ID:    uid,
 		Email: email,
@@ -75,6 +75,17 @@ func VerifyToken(tr string) (*jwt.Token, error) {
 	return token, err
 }
 
+func ExtractToken(token string) (jwt.MapClaims, error) {
+	tr, err := VerifyToken(token)
+	if err != nil {
+		return nil, err
+	}
+	if claims, ok := tr.Claims.(jwt.MapClaims); ok && tr.Valid {
+		return claims, nil
+	}
+	return nil, err
+}
+
 func ExtractTokenAuth(token string) (string, error) {
 	tr, err := VerifyToken(token)
 	if err != nil {
@@ -89,13 +100,11 @@ func ExtractTokenAuth(token string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if user.Email == claims["email"] {
-			newAT, err := GenerateAT(user.ID.String(), user.Email)
-			if err != nil {
-				return "", err
-			}
-			return newAT, nil
+		newAT, err := GenerateAT(user.ID.String(), user.Email)
+		if err != nil {
+			return "", err
 		}
+		return newAT, nil
 	}
-	return "", nil
+	return "", err
 }

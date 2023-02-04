@@ -23,6 +23,6 @@ func InitDB() {
 func AutoMigrator() {
 	// err := DB.Debug().Migrator().DropTable(&models.Users{})
 	// utils.CheckError(err)
-	err := DB.Debug().AutoMigrate(&models.Users{})
+	err := DB.Debug().AutoMigrate(&models.Users{}, &models.Posts{})
 	utils.CheckError(err)
 }

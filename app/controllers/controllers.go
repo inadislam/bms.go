@@ -18,16 +18,8 @@ func NotImplemented(c *fiber.Ctx) error {
 }
 
 func RefreshToken(c *fiber.Ctx) error {
-	tokenReqBody := struct {
-		RefreshToken string `json:"refresh_token"`
-	}{}
-	if err := c.BodyParser(&tokenReqBody); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":  err.Error(),
-			"status": fiber.StatusBadRequest,
-		})
-	}
-	token, err := auth.ExtractTokenAuth(tokenReqBody.RefreshToken)
+	RefreshToken := c.Cookies("refresh_token")
+	token, err := auth.ExtractTokenAuth(RefreshToken)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error":  err.Error(),
