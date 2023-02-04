@@ -45,13 +45,17 @@ func Registration(c *fiber.Ctx) error {
 		})
 	}
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"ID":           uc.ID,
-		"Name":         uc.Name,
-		"Email":        uc.Email,
-		"Password":     "Your Password",
-		"Verification": uc.Verified,
-		"Message":      "Check your Email Box for Verification Code",
-		"status":       fiber.StatusCreated,
+		"status":  fiber.StatusCreated,
+		"message": "user created",
+		"data": fiber.Map{
+			"ID":           uc.ID,
+			"Name":         uc.Name,
+			"Email":        uc.Email,
+			"Password":     "Your Password",
+			"Verification": uc.Verified,
+			"Message":      "Check your Email Box for Verification Code",
+			"status":       fiber.StatusCreated,
+		},
 	})
 }
 
@@ -102,13 +106,17 @@ func ActiveUser(c *fiber.Ctx) error {
 		}
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"user_id":       user.ID,
-		"name":          user.Name,
-		"email":         user.Email,
-		"profile_photo": user.ProfilePhoto,
-		"password":      "Your Password",
-		"message":       "your account activated.please login now!!",
-		"status":        fiber.StatusOK,
+		"status":  fiber.StatusOK,
+		"message": "login success",
+		"data": fiber.Map{
+			"user_id":       user.ID,
+			"name":          user.Name,
+			"email":         user.Email,
+			"profile_photo": user.ProfilePhoto,
+			"password":      "Your Password",
+			"message":       "your account activated.please login now!!",
+			"status":        fiber.StatusOK,
+		},
 	})
 }
 

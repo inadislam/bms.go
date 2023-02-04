@@ -21,7 +21,7 @@ type RClaim struct {
 	jwt.StandardClaims
 }
 
-func GenerateAT(uid, email string) (access_token string, err error) {
+func GenerateAT(uid, email string) (string, error) {
 	// access token
 	et := time.Now().Add(15 * time.Minute).Unix()
 	claims := &AClaim{
@@ -32,11 +32,11 @@ func GenerateAT(uid, email string) (access_token string, err error) {
 		},
 	}
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	access_token, err = at.SignedString([]byte(os.Getenv("secret")))
+	access_token, err := at.SignedString([]byte(os.Getenv("secret")))
 	if err != nil {
 		return "", err
 	}
-	return
+	return "Bearer " + access_token, err
 }
 
 func GenerateJWT(uid, email string) (access_token string, refresh_token string, err error) {
@@ -65,7 +65,7 @@ func GenerateJWT(uid, email string) (access_token string, refresh_token string, 
 func VerifyToken(tr string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(os.Getenv("secret")), nil
 	})

@@ -1,26 +1,24 @@
 package routes
 
 import (
-	"time"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/inadislam/bms-go/app/auth"
 	"github.com/inadislam/bms-go/app/controllers"
 )
 
 func NewRoutes(app *fiber.App) {
-	app.Use(cache.New(
-		cache.Config{
-			Expiration:   24 * time.Hour,
-			CacheControl: true,
-			CacheHeader:  "X-Cache-Status",
-		},
-	), cors.New(cors.Config{
-		AllowCredentials: true,
-	}))
+	app.Use(
+		cors.New(cors.Config{
+			AllowCredentials: true,
+		}),
+		compress.New(compress.Config{
+			Level: compress.LevelBestCompression,
+		}),
+	)
 
-	app.Get("/home", controllers.NotImplemented)
+	app.Get("/home", auth.IsAuth, controllers.NotImplemented)
 	app.Get("/posts", controllers.NotImplemented)
 	app.Get("/categories", controllers.NotImplemented)
 	app.Get("/category/:catname", controllers.NotImplemented)
