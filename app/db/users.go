@@ -71,3 +71,44 @@ func GetOTP(uid uuid.UUID) int64 {
 	}
 	return code
 }
+
+func Users() (models.Users, error) {
+	var users models.Users
+	err := DB.Debug().Model(&models.Users{}).Find(&users).Error
+	if err != nil {
+		return models.Users{}, err
+	}
+	return users, nil
+}
+
+func UpdateUser(user models.Users, userid string) (models.Users, error) {
+	if user.Password != "" {
+		id, _ := uuid.Parse(userid)
+		u, err := UserById(id)
+		if err != nil {
+			return models.Users{}, err
+		}
+		err = utils.ComparePass(u.Password, user.Password)
+		if err == nil {
+			hashedPassword, err := utils.HashPassword(user.Password)
+			if err != nil {
+				return models.Users{}, err
+			}
+			user.Password = string(hashedPassword)
+		} else {
+			return models.Users{}, err
+		}
+	}
+	update := DB.Debug().Model(&models.Users{}).Where("id = ?", userid).Updates(
+		map[string]interface{}{
+			"name":          user.Name,
+			"email":         user.Email,
+			"password":      user.Password,
+			"profile_photo": user.ProfilePhoto,
+		},
+	)
+	if update.Error != nil {
+		return models.Users{}, update.Error
+	}
+	return user, nil
+}
