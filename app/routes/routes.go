@@ -36,4 +36,5 @@ func NewRoutes(app *fiber.App) {
 	app.Post("/adduser", auth.IsAuth, controllers.NotImplemented)
 	app.Post("/addcomment", auth.IsAuth, controllers.NotImplemented)
 	app.Post("/profile", auth.IsAuth, controllers.UserProfile)
+	app.Post("/update-profile", auth.IsAuth, controllers.UserUpdate)
 }

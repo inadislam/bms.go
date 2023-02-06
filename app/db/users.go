@@ -2,11 +2,13 @@ package db
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/inadislam/bms-go/app/models"
 	"github.com/inadislam/bms-go/app/utils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func RegistrationHelper(user models.Users) (models.Users, error) {
@@ -81,34 +83,27 @@ func Users() (models.Users, error) {
 	return users, nil
 }
 
-func UpdateUser(user models.Users, userid string) (models.Users, error) {
-	if user.Password != "" {
+func UpdateUser(user map[string]interface{}, userid string) (map[string]interface{}, error) {
+	if _, ok := user["password"]; ok {
 		id, _ := uuid.Parse(userid)
 		u, err := UserById(id)
 		if err != nil {
-			return models.Users{}, err
+			return map[string]interface{}{}, err
 		}
-		err = utils.ComparePass(u.Password, user.Password)
+		err = utils.ComparePass(u.Password, fmt.Sprintf("%v", user["password"]))
 		if err == nil {
-			hashedPassword, err := utils.HashPassword(user.Password)
+			hashedPassword, err := utils.HashPassword(fmt.Sprintf("%v", user["password"]))
 			if err != nil {
-				return models.Users{}, err
+				return map[string]interface{}{}, err
 			}
-			user.Password = string(hashedPassword)
+			user["password"] = string(hashedPassword)
 		} else {
-			return models.Users{}, err
+			return map[string]interface{}{}, err
 		}
 	}
-	update := DB.Debug().Model(&models.Users{}).Where("id = ?", userid).Updates(
-		map[string]interface{}{
-			"name":          user.Name,
-			"email":         user.Email,
-			"password":      user.Password,
-			"profile_photo": user.ProfilePhoto,
-		},
-	)
+	update := DB.Debug().Model(&models.Users{}).Clauses(clause.Returning{}).Where("id = ?", userid).Updates(user)
 	if update.Error != nil {
-		return models.Users{}, update.Error
+		return map[string]interface{}{}, update.Error
 	}
 	return user, nil
 }
