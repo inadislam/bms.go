@@ -55,3 +55,11 @@ func PostsByTitle(postTitle string) (models.Posts, error) {
 	}
 	return posts, nil
 }
+
+func CreatePost(post models.Posts, userid string) (models.Posts, error) {
+	err := DB.Debug().Model(&models.Posts{}).Create(&post).Error
+	if err != nil {
+		return models.Posts{}, err
+	}
+	return post, nil
+}

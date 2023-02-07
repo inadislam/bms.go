@@ -31,7 +31,7 @@ func NewRoutes(app *fiber.App) {
 	app.Post("/active-user/:userid", controllers.ActiveUser)
 	app.Post("/search/:q", controllers.NotImplemented)
 	app.Post("/comments/:postid", controllers.NotImplemented)
-	app.Post("/addpost", auth.IsAuth, controllers.NotImplemented)
+	app.Post("/addpost", auth.IsAuth, controllers.AddPost)
 	app.Post("/addcategory", auth.IsAuth, controllers.NotImplemented)
 	app.Post("/adduser", auth.IsAuth, controllers.NotImplemented)
 	app.Post("/addcomment", auth.IsAuth, controllers.NotImplemented)

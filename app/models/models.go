@@ -35,15 +35,14 @@ type UU struct {
 type Posts struct {
 	ID           uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key;unique" json:"id"`
 	AuthorID     uuid.UUID      `gorm:"type:uuid;not null" json:"author_id"`
-	Author       Users          `gorm:"foreignKey:AuthorID;" json:"author"`
 	Title        string         `gorm:"type:varchar(255);not null" json:"title"`
 	Body         string         `gorm:"not null" json:"body"`
 	Status       string         `gorm:"type:varchar(255);not null" json:"status"`
 	Category     string         `gorm:"type:varchar(255);not null" json:"category"`
-	Tags         string         `gorm:"type:varchar(255);not null" json:"tags"`
-	Medias       pq.StringArray `gorm:"type:text[];not null" json:"medias"`
+	Tags         string         `gorm:"type:varchar(255);" json:"tags"`
+	Medias       pq.StringArray `gorm:"type:text[];" json:"medias"`
 	FeatureImage string         `gorm:"type:varchar(255);not null" json:"feature_image"`
-	Visibility   bool           `gorm:"type:varchar(255);default:1;not null" json:"visibility"`
+	Visibility   bool           `gorm:"default:1;not null" json:"visibility"`
 	Publish      time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"publish"`
 	CreatedAt    time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
