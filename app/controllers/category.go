@@ -11,28 +11,7 @@ import (
 	"github.com/inadislam/bms-go/app/models"
 )
 
-func ShowPosts(c *fiber.Ctx) error {
-	posts, err := db.GetPosts()
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error":  "no posts found",
-			"status": fiber.StatusNotFound,
-			"data":   nil,
-		})
-	}
-	if posts.Title == "" {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"status": fiber.StatusOK,
-			"data":   "no post found",
-		})
-	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": fiber.StatusOK,
-		"data":   posts,
-	})
-}
-
-func AddPost(c *fiber.Ctx) error {
+func AddCategory(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")
 	post := new(models.Posts)
@@ -86,7 +65,7 @@ func AddPost(c *fiber.Ctx) error {
 	})
 }
 
-func DeletePost(c *fiber.Ctx) error {
+func DeleteCategory(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")
 	var delete int64

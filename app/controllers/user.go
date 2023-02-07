@@ -58,7 +58,7 @@ func Author(c *fiber.Ctx) error {
 				"data":   nil,
 			})
 		}
-		user, err = db.UserByEmail(claims["email"].(string))
+		user, err = db.UserByEmail(fmt.Sprintf("%v", claims["email"]))
 		if err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error":  "user not found",

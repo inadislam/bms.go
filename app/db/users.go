@@ -83,6 +83,18 @@ func Users() (models.Users, error) {
 	return users, nil
 }
 
+func DeleteUser(userid string) (int64, error) {
+	userId, err := uuid.Parse(userid)
+	if err != nil {
+		return 0, err
+	}
+	delete := DB.Debug().Where("id = ?", userId).Delete(&models.Users{})
+	if delete.Error != nil {
+		return 0, delete.Error
+	}
+	return delete.RowsAffected, nil
+}
+
 func UpdateUser(user map[string]interface{}, userid string) (map[string]interface{}, error) {
 	if _, ok := user["password"]; ok {
 		id, _ := uuid.Parse(userid)

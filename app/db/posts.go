@@ -63,3 +63,19 @@ func CreatePost(post models.Posts, userid string) (models.Posts, error) {
 	}
 	return post, nil
 }
+
+func PostDelete(postid, userid string) (int64, error) {
+	postId, err := uuid.Parse(postid)
+	if err != nil {
+		return 0, err
+	}
+	userId, err := uuid.Parse(userid)
+	if err != nil {
+		return 0, err
+	}
+	delete := DB.Debug().Model(&models.Posts{}).Where("id = ? AND author_id", postId, userId).Update("visibility", "false")
+	if delete.Error != nil {
+		return 0, delete.Error
+	}
+	return delete.RowsAffected, nil
+}
