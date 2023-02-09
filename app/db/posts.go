@@ -21,14 +21,26 @@ func GetPosts() ([]models.Posts, error) {
 	return posts, nil
 }
 
-func PostsByUserId(userid uuid.UUID) (models.Posts, error) {
-	var posts models.Posts
-	err := DB.Debug().Model(&models.Posts{}).Where("AuthorID = ?", userid).Find(&posts).Error
+func GetPostByCatName(catname string) ([]models.Posts, error) {
+	var posts []models.Posts
+	err := DB.Debug().Model(&models.Posts{}).Where("category = ?", catname).Find(&posts).Error
 	if err != nil {
-		return models.Posts{}, err
+		return []models.Posts{}, err
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return models.Posts{}, errors.New("user not found")
+		return []models.Posts{}, errors.New("psot not found")
+	}
+	return posts, nil
+}
+
+func PostsByUserId(userid uuid.UUID) ([]models.Posts, error) {
+	var posts []models.Posts
+	err := DB.Debug().Model(&models.Posts{}).Where("author_id = ?", userid).Find(&posts).Error
+	if err != nil {
+		return []models.Posts{}, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return []models.Posts{}, errors.New("user not found")
 	}
 	return posts, nil
 }

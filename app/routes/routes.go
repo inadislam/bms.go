@@ -20,9 +20,9 @@ func NewRoutes(app *fiber.App) {
 
 	app.Get("/home", auth.IsAuth, controllers.NotImplemented)
 	app.Get("/posts", controllers.ShowPosts)
-	app.Get("/categories", auth.IsAuth, controllers.NotImplemented)
-	app.Get("/category/:catname", controllers.NotImplemented)
-	app.Get("/author/:authorname", controllers.Author)
+	app.Get("/categories", auth.IsAuth, controllers.ShowCategories)
+	app.Get("/category/:catname", controllers.PostByCat)
+	app.Get("/author/:authorid", controllers.Author)
 
 	app.Post("/register", controllers.Registration)
 	app.Post("/login", controllers.Login)
@@ -32,7 +32,7 @@ func NewRoutes(app *fiber.App) {
 	app.Post("/search/:q", controllers.NotImplemented)
 	app.Post("/comments/:postid", controllers.NotImplemented)
 	app.Post("/addpost", auth.IsAuth, controllers.AddPost)
-	app.Post("/addcategory", auth.IsAuth, controllers.NotImplemented)
+	app.Post("/addcategory", auth.IsAuth, controllers.AddCategory)
 	app.Post("/adduser", auth.IsAuth, controllers.NotImplemented)
 	app.Post("/addcomment", auth.IsAuth, controllers.NotImplemented)
 	app.Post("/profile", auth.IsAuth, controllers.UserProfile)

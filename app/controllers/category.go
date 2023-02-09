@@ -75,6 +75,23 @@ func AddCategory(c *fiber.Ctx) error {
 	})
 }
 
+func CategoryByName(c *fiber.Ctx) error {
+	catname := c.Params("catname")
+	category, err := db.CategoryByTitle(catname)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":  err.Error(),
+			"status": fiber.StatusNotFound,
+			"data":   nil,
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  fiber.StatusOK,
+		"message": "success",
+		"data":    category,
+	})
+}
+
 func UpdateCategory(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")

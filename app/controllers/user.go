@@ -47,42 +47,32 @@ func UserProfile(c *fiber.Ctx) error {
 }
 
 func Author(c *fiber.Ctx) error {
-	token := c.Cookies("access_token")
-	newToken := strings.Split(token, " ")
 	var user models.Users
-	var posts models.Posts
-	if len(newToken) == 2 {
-		claims, err := auth.ExtractToken(newToken[1])
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error":  "unauthorized",
-				"status": fiber.StatusUnauthorized,
-				"data":   nil,
-			})
-		}
-		user, err = db.UserByEmail(fmt.Sprintf("%v", claims["email"]))
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error":  "user not found",
-				"status": fiber.StatusNotFound,
-				"data":   nil,
-			})
-		}
-		if name := strings.ReplaceAll(strings.ToLower(user.Name), " ", ""); c.Params("authorname") != name {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error":  "bad request",
-				"status": fiber.StatusBadRequest,
-				"data":   nil,
-			})
-		}
-		posts, err = db.PostsByUserId(user.ID)
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error":  "no posts found",
-				"status": fiber.StatusNotFound,
-				"data":   nil,
-			})
-		}
+	var posts []models.Posts
+	userid := c.Params("authorid")
+	userId, err := uuid.Parse(userid)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":  "bad request",
+			"status": fiber.StatusBadRequest,
+			"data":   nil,
+		})
+	}
+	posts, err = db.PostsByUserId(userId)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":  "no posts found",
+			"status": fiber.StatusNotFound,
+			"data":   nil,
+		})
+	}
+	user, err = db.UserById(userId)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":  "no posts found",
+			"status": fiber.StatusNotFound,
+			"data":   nil,
+		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": fiber.StatusOK,

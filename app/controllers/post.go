@@ -86,6 +86,23 @@ func AddPost(c *fiber.Ctx) error {
 	})
 }
 
+func PostByCat(c *fiber.Ctx) error {
+	cat := strings.ToLower(strings.Trim(c.Params("catname"), ""))
+	post, err := db.GetPostByCatName(cat)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":  err.Error(),
+			"status": fiber.StatusNotFound,
+			"data":   nil,
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  fiber.StatusOK,
+		"message": "success",
+		"data":    post,
+	})
+}
+
 func DeletePost(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")
