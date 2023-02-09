@@ -1,55 +1,65 @@
 package controllers
 
 import (
-	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"github.com/inadislam/bms-go/app/auth"
 	"github.com/inadislam/bms-go/app/db"
 	"github.com/inadislam/bms-go/app/models"
 )
 
+func ShowCategories(c *fiber.Ctx) error {
+	cat, err := db.GetCategories()
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":  "no posts found",
+			"status": fiber.StatusNotFound,
+			"data":   nil,
+		})
+	}
+	if cat.Category == "" {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"status": fiber.StatusOK,
+			"data":   "no category found",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": fiber.StatusOK,
+		"data":   cat,
+	})
+}
+
 func AddCategory(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")
-	post := new(models.Posts)
-	var postDetails models.Posts
+	category := new(models.Category)
+	var categoryDetails models.Category
 	if len(newToken) == 2 {
-		claims, err := auth.ExtractToken(newToken[1])
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error":  "unauthorized",
-				"status": fiber.StatusUnauthorized,
-				"data":   nil,
-			})
-		}
-		if err := c.BodyParser(post); err != nil {
+		if err := c.BodyParser(category); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error":  err.Error(),
 				"status": fiber.StatusInternalServerError,
 				"data":   nil,
 			})
 		}
-		if post.Title == "" || post.Body == "" || post.Status == "" || post.Category == "" || post.FeatureImage == "" {
+		if category.Category == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error":  "field must not be empty!!",
 				"status": fiber.StatusBadRequest,
 				"data":   nil,
 			})
 		}
-		userid, err := uuid.Parse(fmt.Sprintf("%v", claims["user_id"]))
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error":  err.Error(),
-				"status": fiber.StatusInternalServerError,
-				"data":   nil,
-			})
+		if category.Slug == "" {
+			if strings.Contains(category.Category, " ") {
+				category.Slug = strings.ToLower(strings.Join(strings.Split(category.Category, " "), "-"))
+			} else {
+				category.Slug = strings.ToLower(category.Category)
+			}
 		}
 
-		post.AuthorID = userid
-		postDetails, err = db.CreatePost(*post, userid.String())
+		var err error
+		categoryDetails, err = db.CreateCategory(*category)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error":  err.Error(),
@@ -61,43 +71,43 @@ func AddCategory(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status":  fiber.StatusOK,
 		"message": "success",
-		"data":    postDetails,
+		"data":    categoryDetails,
 	})
 }
 
-func DeleteCategory(c *fiber.Ctx) error {
+func UpdateCategory(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")
-	var delete int64
-	if len(newToken) == 2 {
-		claims, err := auth.ExtractToken(newToken[1])
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error":  "unauthorized",
-				"status": fiber.StatusUnauthorized,
-				"data":   nil,
-			})
-		}
-		postId := c.Params("postid")
-		delete, err = db.PostDelete(postId, fmt.Sprintf("%v", claims["user_id"]))
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error":  "there is error somewhere.",
-				"status": fiber.StatusBadRequest,
-				"data":   nil,
-			})
-		}
-	}
-	if delete > 0 {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"status":  fiber.StatusOK,
-			"message": "success",
-			"data":    delete,
+	category := new(models.Category)
+	if err := c.BodyParser(category); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":  err.Error(),
+			"status": fiber.StatusBadRequest,
 		})
 	}
-	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-		"error":  "there is a error somewhere",
-		"status": fiber.StatusBadRequest,
-		"data":   nil,
+	var cat map[string]interface{}
+	var err error
+	updates := make(map[string]interface{})
+	if category.Category != "" {
+		updates["category"] = category.Category
+	}
+	if category.Slug != "" {
+		updates["slug"] = category.Slug
+	}
+	updates["updated_at"] = time.Now()
+	if len(newToken) == 2 {
+		cat, err = db.CategoryUpdate(updates, c.Params("catid"))
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error":  "category not found",
+				"status": fiber.StatusNotFound,
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  fiber.StatusOK,
+		"message": "success",
+		"data":    cat,
 	})
 }

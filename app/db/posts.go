@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/inadislam/bms-go/app/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func GetPosts() (models.Posts, error) {
@@ -60,6 +61,14 @@ func CreatePost(post models.Posts, userid string) (models.Posts, error) {
 	err := DB.Debug().Model(&models.Posts{}).Create(&post).Error
 	if err != nil {
 		return models.Posts{}, err
+	}
+	return post, nil
+}
+
+func UpdatePosts(post map[string]interface{}, postid string) (map[string]interface{}, error) {
+	update := DB.Debug().Model(&models.Posts{}).Clauses(clause.Returning{}).Where("id = ?", postid).Updates(post)
+	if update.Error != nil {
+		return map[string]interface{}{}, update.Error
 	}
 	return post, nil
 }

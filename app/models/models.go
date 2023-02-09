@@ -47,3 +47,11 @@ type Posts struct {
 	CreatedAt    time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
+
+type Category struct {
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key;unique" json:"id"`
+	Category  string    `gorm:"type:varchar(255);unique;not null" json:"category"`
+	Slug      string    `gorm:"type:varchar(255);unique;not null" json:"slug"`
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+}
