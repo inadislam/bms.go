@@ -9,14 +9,14 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func GetPosts() (models.Posts, error) {
-	var posts models.Posts
+func GetPosts() ([]models.Posts, error) {
+	var posts []models.Posts
 	err := DB.Debug().Model(&models.Posts{}).Find(&posts).Error
 	if err != nil {
-		return models.Posts{}, err
+		return []models.Posts{}, err
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return models.Posts{}, errors.New("user not found")
+		return []models.Posts{}, errors.New("psot not found")
 	}
 	return posts, nil
 }

@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/inadislam/bms-go/app/models"
@@ -96,23 +95,6 @@ func DeleteUser(userid string) (int64, error) {
 }
 
 func UpdateUser(user map[string]interface{}, userid string) (map[string]interface{}, error) {
-	if _, ok := user["password"]; ok {
-		id, _ := uuid.Parse(userid)
-		u, err := UserById(id)
-		if err != nil {
-			return map[string]interface{}{}, err
-		}
-		err = utils.ComparePass(u.Password, fmt.Sprintf("%v", user["password"]))
-		if err == nil {
-			hashedPassword, err := utils.HashPassword(fmt.Sprintf("%v", user["password"]))
-			if err != nil {
-				return map[string]interface{}{}, err
-			}
-			user["password"] = string(hashedPassword)
-		} else {
-			return map[string]interface{}{}, err
-		}
-	}
 	update := DB.Debug().Model(&models.Users{}).Clauses(clause.Returning{}).Where("id = ?", userid).Updates(user)
 	if update.Error != nil {
 		return map[string]interface{}{}, update.Error

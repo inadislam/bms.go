@@ -19,6 +19,13 @@ func NotImplemented(c *fiber.Ctx) error {
 
 func RefreshToken(c *fiber.Ctx) error {
 	RefreshToken := c.Cookies("refresh_token")
+	if RefreshToken == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":  "please login again",
+			"status": fiber.StatusBadRequest,
+			"data":   nil,
+		})
+	}
 	token, err := auth.ExtractTokenAuth(RefreshToken)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{

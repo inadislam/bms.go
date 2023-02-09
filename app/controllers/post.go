@@ -20,7 +20,7 @@ func ShowPosts(c *fiber.Ctx) error {
 			"data":   nil,
 		})
 	}
-	if posts.Title == "" {
+	if posts[0].Title == "" {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"status": fiber.StatusOK,
 			"data":   "no post found",

@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/inadislam/bms-go/app/auth"
 	"github.com/inadislam/bms-go/app/db"
 	"github.com/inadislam/bms-go/app/models"
+	"github.com/inadislam/bms-go/app/utils"
 )
 
 func UserProfile(c *fiber.Ctx) error {
@@ -100,27 +102,7 @@ func UserUpdate(c *fiber.Ctx) error {
 	token := c.Cookies("access_token")
 	newToken := strings.Split(token, " ")
 	users := new(models.UU)
-	if err := c.BodyParser(users); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":  err.Error(),
-			"status": fiber.StatusBadRequest,
-		})
-	}
 	var user map[string]interface{}
-	updates := make(map[string]interface{})
-	if users.Name != "" {
-		updates["name"] = users.Name
-	}
-	if users.Email != "" {
-		updates["email"] = users.Email
-	}
-	if users.Password != "" {
-		updates["password"] = users.Password
-	}
-	if users.ProfilePhoto != "" {
-		updates["profile_photo"] = users.ProfilePhoto
-	}
-	updates["updated_at"] = time.Now()
 	if len(newToken) == 2 {
 		claims, err := auth.ExtractToken(newToken[1])
 		if err != nil {
@@ -130,7 +112,56 @@ func UserUpdate(c *fiber.Ctx) error {
 				"data":   nil,
 			})
 		}
-		user, err = db.UpdateUser(updates, fmt.Sprintf("%v", claims["user_id"]))
+		userid := fmt.Sprintf("%v", claims["user_id"])
+		if err := c.BodyParser(users); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":  err.Error(),
+				"status": fiber.StatusBadRequest,
+			})
+		}
+		updates := make(map[string]interface{})
+		if users.Name != "" {
+			updates["name"] = users.Name
+		}
+		if users.Email != "" {
+			updates["email"] = users.Email
+		}
+		if users.Password != "" && users.OldPassword != "" {
+			id, _ := uuid.Parse(userid)
+			u, err := db.UserById(id)
+			if err != nil {
+				return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+					"error":  "user not found",
+					"status": fiber.StatusNotFound,
+				})
+			}
+			err = utils.ComparePass(u.Password, users.OldPassword)
+			if err == nil {
+				hashedPassword, err := utils.HashPassword(users.Password)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":  err.Error(),
+						"status": fiber.StatusInternalServerError,
+					})
+				}
+				updates["password"] = string(hashedPassword)
+			} else {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error":  err.Error(),
+					"status": fiber.StatusBadRequest,
+				})
+			}
+		} else {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":  "fields must not be empty",
+				"status": fiber.StatusBadRequest,
+			})
+		}
+		if users.ProfilePhoto != "" {
+			updates["profile_photo"] = users.ProfilePhoto
+		}
+		updates["updated_at"] = time.Now()
+		user, err = db.UpdateUser(updates, userid)
 		if err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error":  "user not found",

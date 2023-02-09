@@ -27,6 +27,7 @@ type Login struct {
 type UU struct {
 	Name         string    `gorm:"type:varchar(255);size:10;not null" json:"name"`
 	Email        string    `gorm:"uniqueIndex;not null" json:"email"`
+	OldPassword  string    `gorm:"size:500;not null" json:"old_password,omitempty"`
 	Password     string    `gorm:"size:500;not null" json:"password,omitempty"`
 	ProfilePhoto string    `gorm:"type:varchar(255);not null" json:"profile_photo"`
 	UpdatedAt    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
