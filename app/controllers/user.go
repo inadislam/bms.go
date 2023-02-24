@@ -35,6 +35,11 @@ func UserProfile(c *fiber.Ctx) error {
 			})
 		}
 	}
+	var userwords []string
+	fnword := strings.Split(user.Name, " ")
+	for _, v := range fnword {
+		userwords = append(userwords, string(v[0]))
+	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": fiber.StatusOK,
 		"data": fiber.Map{
@@ -42,6 +47,7 @@ func UserProfile(c *fiber.Ctx) error {
 			"email":         user.Email,
 			"user_name":     user.Name,
 			"profile_photo": user.ProfilePhoto,
+			"user_words":    userwords,
 		},
 	})
 }
